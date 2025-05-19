@@ -46,7 +46,7 @@ class PandaInterface(Node):
         self.gripper = None
         try:
             self.panda = panda_py.Panda(self.get_parameter("hostname").value)
-            self.gripper = panda_py.Gripper(self.get_parameter("hostname").value)
+            self.gripper = libfranka.Gripper(self.get_parameter("hostname").value)
         except Exception as e:
             self.get_logger().error(
                 f"Error initializing Panda robot: {e}\nUse the reinitialize service to try again."
