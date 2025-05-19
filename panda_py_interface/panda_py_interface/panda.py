@@ -36,7 +36,6 @@ class PandaInterface(Node):
         self.move_to_start_service = self.create_service(
             Trigger, "move_to_start", self.move_to_start_callback
         )
-        self.pose_topic = self.create_publisher(Pose, "pose", 10)
         self.end_effector_delta_pos_service = self.create_service(
             EndEffectorDeltaPos,
             "end_effector_delta_pos",
