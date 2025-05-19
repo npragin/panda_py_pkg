@@ -9,7 +9,7 @@
 
 import rclpy
 from rclpy.node import Node
-from rclpy.parameter import ParameterDescriptor
+from rcl_interfaces.msg import ParameterDescriptor
 from std_srvs.srv import Trigger
 
 from panda_py_msgs.srv import EndEffectorDeltaPos
