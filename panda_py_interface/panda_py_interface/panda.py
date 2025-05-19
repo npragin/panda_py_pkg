@@ -81,9 +81,9 @@ class PandaInterface(Node):
 
     def end_effector_delta_pos_callback(self, request, response):
         pose = self.panda.get_pose()
-        pose[0, 3] += request.delta_pos.x
-        pose[1, 3] += request.delta_pos.y
-        pose[2, 3] += request.delta_pos.z
+        pose[0, 3] += request.x
+        pose[1, 3] += request.y
+        pose[2, 3] += request.z
 
         try:
             self.panda.move_to_pose(pose)
@@ -94,9 +94,9 @@ class PandaInterface(Node):
         self.get_logger().info("Panda robot moved to delta position.")
 
         new_pose = self.panda.get_pose()
-        response.pose.x = new_pose[0, 3]
-        response.pose.y = new_pose[1, 3]
-        response.pose.z = new_pose[2, 3]
+        response.x = new_pose[0, 3]
+        response.y = new_pose[1, 3]
+        response.z = new_pose[2, 3]
 
         return response
 
