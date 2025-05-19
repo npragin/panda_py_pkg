@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>panda_py</name>
+  <name>panda_py_interface</name>
   <version>0.0.0</version>
   <description>Package for interacting with the Panda robot via panda-py</description>
   <maintainer email="npragin@gmail.com">npragin</maintainer>

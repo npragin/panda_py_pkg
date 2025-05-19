@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'panda_py'
+package_name = 'panda_py_interface'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'panda_py = panda_py.panda_py:main',
+            'panda_py_interface = panda_py_interface.panda:main',
         ],
     },
 )
