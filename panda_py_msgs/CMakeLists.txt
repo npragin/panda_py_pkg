@@ -15,6 +15,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/TransformMatrixRow.msg"
   "msg/TransformMatrix.msg"
   "srv/EndEffectorDeltaPos.srv"
+  "srv/JointPos.srv"
+
   DEPENDENCIES std_msgs
 )
 

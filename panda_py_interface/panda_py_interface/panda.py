@@ -11,8 +11,10 @@ import rclpy
 from rclpy.node import Node
 from rcl_interfaces.msg import ParameterDescriptor
 from std_srvs.srv import Trigger
+from rclpy.parameter import ParameterType
 
 from panda_py_msgs.srv import EndEffectorDeltaPos
+from panda_py_msgs.srv import JointPos
 
 import panda_py
 from panda_py import libfranka
@@ -26,7 +28,24 @@ class PandaInterface(Node):
             "hostname",
             "192.168.1.11",
             ParameterDescriptor(
-                description="The IP address or hostname of the Panda robot"
+                description="The IP address or hostname of the Panda robot",
+                type=ParameterType.STRING,
+            ),
+        )
+        self.declare_parameter(
+            "gripper_speed",
+            0.2,
+            ParameterDescriptor(
+                description="The speed of the gripper",
+                type=ParameterType.DOUBLE,
+            ),
+        )
+        self.declare_parameter(
+            "scaling_constant",
+            1.0,
+            ParameterDescriptor(
+                description="The scaling constant for joint position actions",
+                type=ParameterType.DOUBLE,
             ),
         )
 
@@ -41,10 +60,10 @@ class PandaInterface(Node):
             "end_effector_delta_pos",
             self.end_effector_delta_pos_callback,
         )
-        self.end_effector_pos_service = self.create_service(
-            EndEffectorDeltaPos,
-            "end_effector_pos",
-            self.end_effector_pos_callback,
+        self.joint_pos_service = self.create_service(
+            JointPos,
+            "joint_pos",
+            self.joint_pos_callback,
         )
 
         self.panda = None
@@ -105,14 +124,13 @@ class PandaInterface(Node):
 
         return response
 
-    def end_effector_pos_callback(self, request, response):
-        pose = self.panda.get_pose()
-        pose[0, 3] = request.x
-        pose[1, 3] = request.y
-        pose[2, 3] = request.z
+    def joint_pos_callback(self, request, response):
+        joint_pos = request.pos[0:7] * self.scaling_constant
+        gripper_pos = request.pos[7] * self.scaling_constant
 
         try:
-            self.panda.move_to_pose(pose)
+            self.panda.move_to_joint_position(joint_pos)
+            self.gripper.move(gripper_pos, self.get_parameter("gripper_speed").value)
         except Exception as e:
             self.get_logger().error(f"Error moving Panda robot: {e}")
             return
