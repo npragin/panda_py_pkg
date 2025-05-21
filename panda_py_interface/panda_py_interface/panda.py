@@ -42,7 +42,7 @@ class PandaInterface(Node):
         )
         self.declare_parameter(
             "scaling_constant",
-            1.0,
+            2.5501 ** -1,
             ParameterDescriptor(
                 description="The scaling constant for joint position actions",
                 type=ParameterType.DOUBLE,
