@@ -41,6 +41,11 @@ class PandaInterface(Node):
             "end_effector_delta_pos",
             self.end_effector_delta_pos_callback,
         )
+        self.end_effector_pos_service = self.create_service(
+            EndEffectorDeltaPos,
+            "end_effector_pos",
+            self.end_effector_pos_callback,
+        )
 
         self.panda = None
         self.gripper = None
@@ -92,6 +97,27 @@ class PandaInterface(Node):
             return
 
         self.get_logger().info("Panda robot moved to delta position.")
+
+        new_pose = self.panda.get_pose()
+        response.x = new_pose[0, 3]
+        response.y = new_pose[1, 3]
+        response.z = new_pose[2, 3]
+
+        return response
+
+    def end_effector_pos_callback(self, request, response):
+        pose = self.panda.get_pose()
+        pose[0, 3] = request.x
+        pose[1, 3] = request.y
+        pose[2, 3] = request.z
+
+        try:
+            self.panda.move_to_pose(pose)
+        except Exception as e:
+            self.get_logger().error(f"Error moving Panda robot: {e}")
+            return
+
+        self.get_logger().info("Panda robot moved to position.")
 
         new_pose = self.panda.get_pose()
         response.x = new_pose[0, 3]
