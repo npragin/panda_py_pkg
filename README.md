@@ -10,5 +10,11 @@
 - `ros2 service call move_to_start std_srvs/srv/Trigger`
 - `ros2 service call end_effector_delta_pos panda_py_msgs/srv/EndEffectorDeltaPos {"x: 0, y: 0, z: -.1"}`
 
+
+### Usage: Point cloud pruner package
+
+- `ros2 launch point_cloud_pruner launch_pruner.py`
+
+
  ## Requirements
 Humble, libfranka, [panda-py](https://github.com/JeanElsner/panda-py)
