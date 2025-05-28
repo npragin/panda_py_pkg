@@ -95,9 +95,7 @@ class CameraCalibrator(Node):
         CHECKERBOARD = (9, 8)
         square_size = 0.05
         objp = np.zeros((CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
-        x, y = np.meshgrid(range(CHECKERBOARD[0]), range(CHECKERBOARD[1]))
-        # Stack X and Y coordinates, but flip X ??? to point upward
-        objp[:, :2] = np.stack((x[:, ::-1].flatten(), y.flatten()), axis=1)
+        objp[:, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
         objp *= square_size
 
         print("Estimating poses and creating masked images...")
