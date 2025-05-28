@@ -36,13 +36,13 @@ class CameraCalibrator(Node):
         self.get_logger().info('Camera Calibrator Node Initialized')
 
     def intrinsics_callback(self, msg):
-        self.get_logger().info(f"Received Camera Info: {msg.K}")
-        self.intrinsics = msg.K
-        self.distortion_coefficients = msg.D
+        self.get_logger().info(f"Received Camera Info")
+        self.intrinsics = msg.k
+        self.distortion_coefficients = msg.d
         self.destroy_subscription(self.intrinsics_subscription)
 
     def image_callback(self, msg):
-        self.get_logger().info(f"Received Image: width={msg.width}, height={msg.height}")
+        self.get_logger().info(f"Received Image}")
 
         if self.intrinsics is None or self.distortion_coefficients is None:
             self.get_logger().warn("No intrinsics or distortion coefficients received yet.")
@@ -57,7 +57,7 @@ class CameraCalibrator(Node):
             t = TransformStamped()
 
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = 'world'
+            t.header.frame_id = 'camera_depth_optical_frame'
             t.child_frame_id = 'table'
 
             translation = transformation_matrix[0:3, 3]
