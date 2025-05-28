@@ -42,7 +42,7 @@ class CameraCalibrator(Node):
         self.destroy_subscription(self.intrinsics_subscription)
 
     def image_callback(self, msg):
-        self.get_logger().info(f"Received Image}")
+        self.get_logger().info(f"Received Image")
 
         if self.intrinsics is None or self.distortion_coefficients is None:
             self.get_logger().warn("No intrinsics or distortion coefficients received yet.")
