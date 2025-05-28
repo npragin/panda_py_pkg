@@ -36,13 +36,13 @@ class CameraCalibrator(Node):
         self.get_logger().info('Camera Calibrator Node Initialized')
 
     def intrinsics_callback(self, msg):
-        self.get_logger().info(f"Received Camera Info")
+        self.get_logger().info(f"Received Camera Info: {msg.k}")
         self.intrinsics = msg.k
         self.distortion_coefficients = msg.d
         self.destroy_subscription(self.intrinsics_subscription)
 
     def image_callback(self, msg):
-        self.get_logger().info(f"Received Image")
+        self.get_logger().info(f"Received Image: width={msg.width}, height={msg.height}")
 
         if self.intrinsics is None or self.distortion_coefficients is None:
             self.get_logger().warn("No intrinsics or distortion coefficients received yet.")
@@ -57,7 +57,7 @@ class CameraCalibrator(Node):
             t = TransformStamped()
 
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = 'camera_depth_optical_frame'
+            t.header.frame_id = 'world'
             t.child_frame_id = 'table'
 
             translation = transformation_matrix[0:3, 3]
@@ -95,7 +95,9 @@ class CameraCalibrator(Node):
         CHECKERBOARD = (9, 8)
         square_size = 0.05
         objp = np.zeros((CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
-        objp[:, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2)
+        x, y = np.meshgrid(range(CHECKERBOARD[0]), range(CHECKERBOARD[1]))
+        # Stack X and Y coordinates
+        objp[:, :2] = np.stack((x[:, ::-1].flatten(), y.flatten()), axis=1)
         objp *= square_size
 
         print("Estimating poses and creating masked images...")
