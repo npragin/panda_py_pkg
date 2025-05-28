@@ -57,7 +57,7 @@ class CameraCalibrator(Node):
             t = TransformStamped()
 
             t.header.stamp = self.get_clock().now().to_msg()
-            t.header.frame_id = 'world'
+            t.header.frame_id = 'camera_depth_optical_frame'
             t.child_frame_id = 'table'
 
             translation = transformation_matrix[0:3, 3]
