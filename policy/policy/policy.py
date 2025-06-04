@@ -35,7 +35,7 @@ class PolicyNode(Node):
             self.callback,
             10,
         )
-        self.trajectory_client = self.create_server(
+        self.trajectory_client = self.create_service(
             Trigger,
             "trajectory",
             self.trajectory_callback,
