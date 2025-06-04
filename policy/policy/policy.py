@@ -39,7 +39,6 @@ class PolicyNode(Node):
             Trigger,
             "trajectory",
             self.trajectory_callback,
-            10,
         )
 
         while not self.joint_pos_service.wait_for_service(timeout_sec=1.0):
