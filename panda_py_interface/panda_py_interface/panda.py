@@ -31,7 +31,7 @@ class PandaInterface(LifecycleNode):
             "192.168.1.11",
             ParameterDescriptor(
                 description="The IP address or hostname of the Panda robot",
-                type=ParameterType.STRING,
+                type=ParameterType.PARAMETER_STRING,
             ),
         )
         self.declare_parameter(
@@ -39,7 +39,7 @@ class PandaInterface(LifecycleNode):
             0.2,
             ParameterDescriptor(
                 description="The speed of the gripper",
-                type=ParameterType.DOUBLE,
+                type=ParameterType.PARAMETER_DOUBLE,
             ),
         )
         self.declare_parameter(
@@ -47,7 +47,7 @@ class PandaInterface(LifecycleNode):
             2.5501**-1,
             ParameterDescriptor(
                 description="The scaling constant for joint position actions",
-                type=ParameterType.DOUBLE,
+                type=ParameterType.PARAMETER_DOUBLE,
             ),
         )
 
