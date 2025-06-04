@@ -8,7 +8,7 @@
 # This node is used to interact with the Panda robot via panda-py
 
 import rclpy
-from rclpy.lifecycle import Node
+from rclpy.lifecycle import LifecycleNode
 from rclpy.lifecycle import State
 from rclpy.lifecycle import TransitionCallbackReturn
 from rcl_interfaces.msg import ParameterDescriptor
@@ -22,7 +22,7 @@ import panda_py
 from panda_py import libfranka
 
 
-class PandaInterface(Node):
+class PandaInterface(LifecycleNode):
     def __init__(self):
         super().__init__("panda_interface")
 
