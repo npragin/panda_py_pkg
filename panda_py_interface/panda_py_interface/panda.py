@@ -239,8 +239,8 @@ class PandaInterface(LifecycleNode):
 
         requested_joint_pos = np.array(request.pos[0:7])
 
-        joint_pos = requested_joint_pos * self.get_parameter("scaling_constant").value
-        gripper_pos = request.pos[7] * self.get_parameter("scaling_constant").value
+        joint_pos = requested_joint_pos
+        gripper_pos = request.pos[7]
 
         self.get_logger().info(f"Sending joint position {joint_pos} and gripper position {gripper_pos} to the Panda robot")
 
