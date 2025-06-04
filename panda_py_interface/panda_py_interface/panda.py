@@ -73,6 +73,11 @@ class PandaInterface(Node):
             "joint_pos",
             self.joint_pos_callback,
         )
+        self.joint_pos_delta_service = self.create_service(
+            JointPos,
+            "joint_pos_delta",
+            self.joint_pos_delta_callback,
+        )
 
         # Initialize robot connection
         try:
@@ -121,6 +126,7 @@ class PandaInterface(Node):
         self.destroy_service(self.move_to_start_service)
         self.destroy_service(self.end_effector_delta_pos_service)
         self.destroy_service(self.joint_pos_service)
+        self.destroy_service(self.joint_pos_delta_service)
 
         # Cleanup robot connection
         self.panda = None
@@ -147,6 +153,7 @@ class PandaInterface(Node):
             self.destroy_service(self.move_to_start_service)
             self.destroy_service(self.end_effector_delta_pos_service)
             self.destroy_service(self.joint_pos_service)
+            self.destroy_service(self.joint_pos_delta_service)
 
             # Cleanup robot connection
             self.panda = None
@@ -236,6 +243,35 @@ class PandaInterface(Node):
         response.y = new_pose[1, 3]
         response.z = new_pose[2, 3]
 
+        return response
+
+    def joint_pos_delta_callback(self, request, response):
+        """Move the robot to a specific joint position delta."""
+        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+            self.get_logger().error("Panda Interface node is not active.")
+            return response
+
+        current_joint_pos = np.array(self.panda.get_state().q)
+        current_gripper_pos = self.gripper.readOnce().width
+        requested_joint_pos = np.array(request.pos[0:7])
+
+        joint_pos = (
+            current_joint_pos
+            + requested_joint_pos * self.get_parameter("scaling_constant").value
+        )
+        gripper_pos = (
+            current_gripper_pos
+            + request.pos[7] * self.get_parameter("scaling_constant").value
+        )
+
+        try:
+            self.panda.move_to_joint_position(joint_pos)
+            self.gripper.move(gripper_pos, self.get_parameter("gripper_speed").value)
+        except Exception as e:
+            self.get_logger().error(f"Error moving Panda robot: {e}")
+            return response
+
+        self.get_logger().info("Panda robot moved to position delta.")
         return response
 
 
