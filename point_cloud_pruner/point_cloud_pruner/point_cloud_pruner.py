@@ -33,13 +33,13 @@ class PointCloudPruner(Node):
         )
 
         if transform is None:
-            self.get_logger().error("Could not transform point cloud to table frame.")
-            return
-
-        pruned = do_transform_cloud(msg, transform)
+            self.get_logger().warn("Could not transform point cloud to table frame.")
+            cloud = msg
+        else:
+            cloud = do_transform_cloud(msg, transform)
 
         # Convert incoming PointCloud2 to numpy array
-        raw_points = list(pc2.read_points(pruned, skip_nans=True, field_names=("x", "y", "z", "rgb")))
+        raw_points = list(pc2.read_points(cloud, skip_nans=True, field_names=("x", "y", "z", "rgb")))
         if not raw_points:
             self.get_logger().warn("No valid points received.")
             return
