@@ -88,6 +88,8 @@ class PolicyNode(Node):
         request.pos = self.trajectory[self.trajectory_index]
         self.trajectory_index = (self.trajectory_index + 1) % len(self.trajectory)
 
+        self.get_logger().info(f"Calling motion service with joint position {request.pos}")
+
         self.joint_pos_service.call_async(request)
 
         response.success = True

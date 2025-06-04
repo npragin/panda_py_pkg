@@ -235,10 +235,14 @@ class PandaInterface(LifecycleNode):
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
+        self.get_logger().info(f"Got request with joint position {request.pos}")
+
         requested_joint_pos = np.array(request.pos[0:7])
 
-        joint_pos = requested_joint_pos * self.get_parameter("scaling_constant").value
-        gripper_pos = request.pos[7] * self.get_parameter("scaling_constant").value
+        joint_pos = requested_joint_pos
+        gripper_pos = request.pos[7]
+
+        self.get_logger().info(f"Sending joint position {joint_pos} and gripper position {gripper_pos} to the Panda robot")
 
         try:
             self.panda.move_to_joint_position(joint_pos)
