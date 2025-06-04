@@ -8,7 +8,9 @@
 # This node is used to interact with the Panda robot via panda-py
 
 import rclpy
-from rclpy.node import Node
+from rclpy.lifecycle import Node
+from rclpy.lifecycle import State
+from rclpy.lifecycle import TransitionCallbackReturn
 from rcl_interfaces.msg import ParameterDescriptor
 from std_srvs.srv import Trigger
 from rclpy.parameter import ParameterType
@@ -49,9 +51,14 @@ class PandaInterface(Node):
             ),
         )
 
-        self.reinitialize_service = self.create_service(
-            Trigger, "reinitialize", self.reinitialize_callback
-        )
+        self.panda = None
+        self.gripper = None
+
+    def on_configure(self, state: State) -> TransitionCallbackReturn:
+        """Configure the node and initialize services."""
+        self.get_logger().info("Configuring Panda Interface node...")
+
+        # Create services
         self.move_to_start_service = self.create_service(
             Trigger, "move_to_start", self.move_to_start_callback
         )
@@ -66,44 +73,105 @@ class PandaInterface(Node):
             self.joint_pos_callback,
         )
 
-        self.panda = None
-        self.gripper = None
+        # Initialize robot connection
         try:
             self.panda = panda_py.Panda(self.get_parameter("hostname").value)
             self.gripper = libfranka.Gripper(self.get_parameter("hostname").value)
+
+            if self.panda is None or self.gripper is None:
+                self.get_logger().error(
+                    "Error initializing Panda robot: Constructors returned None."
+                )
+                return TransitionCallbackReturn.FAILURE
         except Exception as e:
-            self.get_logger().error(
-                f"Error initializing Panda robot: {e}\nUse the reinitialize service to try again."
-            )
-            return
+            self.get_logger().error(f"Error initializing Panda robot: {e}")
+            return TransitionCallbackReturn.FAILURE
 
-        self.get_logger().info("Panda Interface node initialized.")
+        self.get_logger().info("Panda Interface node configured.")
+        return TransitionCallbackReturn.SUCCESS
 
-    def reinitialize_callback(self, request, response):
+    def on_activate(self, state: State) -> TransitionCallbackReturn:
+        """Activate the node."""
+        self.get_logger().info("Activating Panda Interface node...")
+        self.get_logger().info("Panda Interface node activated.")
+        return TransitionCallbackReturn.SUCCESS
+
+    def on_deactivate(self, state: State) -> TransitionCallbackReturn:
+        """Deactivate the node."""
+        self.get_logger().info("Deactivating Panda Interface node...")
+
+        # Stop all motion
         try:
-            self.panda = panda_py.Panda(self.get_parameter("panda_hostname").value)
+            self.panda.stop()
+            self.gripper.stop()
         except Exception as e:
-            self.get_logger().error(
-                f"Error reinitializing Panda robot: {e}\nUse the reinitialize service to try again."
-            )
-            return
+            self.get_logger().error(f"Error stopping Panda robot: {e}")
+            return TransitionCallbackReturn.FAILURE
 
-        self.get_logger().info("Panda Interface node reinitialized.")
+        self.get_logger().info("Panda Interface node deactivated.")
+        return TransitionCallbackReturn.SUCCESS
 
-        return response
+    def on_cleanup(self, state: State) -> TransitionCallbackReturn:
+        """Cleanup the node."""
+        self.get_logger().info("Cleaning up Panda Interface node...")
+
+        # Destroy services
+        self.destroy_service(self.move_to_start_service)
+        self.destroy_service(self.end_effector_delta_pos_service)
+        self.destroy_service(self.joint_pos_service)
+
+        # Cleanup robot connection
+        self.panda = None
+        self.gripper = None
+
+        return TransitionCallbackReturn.SUCCESS
+
+    def on_shutdown(self, state: State) -> TransitionCallbackReturn:
+        """Shutdown the node."""
+        self.get_logger().info("Shutting down Panda Interface node...")
+
+        if state.id == State.PRIMARY_STATE_ACTIVE:
+            # Stop all motion
+            try:
+                self.panda.stop()
+                self.gripper.stop()
+            except Exception as e:
+                self.get_logger().error(f"Error stopping Panda robot: {e}")
+                return TransitionCallbackReturn.FAILURE
+        
+        if state.id != State.PRIMARY_STATE_UNCONFIGURED:
+            # Destroy services
+            self.destroy_service(self.move_to_start_service)
+            self.destroy_service(self.end_effector_delta_pos_service)
+            self.destroy_service(self.joint_pos_service)
+            
+            # Cleanup robot connection
+            self.panda = None
+            self.gripper = None
+
+        return TransitionCallbackReturn.SUCCESS
 
     def move_to_start_callback(self, request, response):
+        """Move the robot to its start position."""
+        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+            self.get_logger().error("Panda Interface node is not active.")
+            return response
+
         try:
             self.panda.move_to_start()
         except Exception as e:
             self.get_logger().error(f"Error moving Panda robot to start: {e}")
-            return
+            return response
 
         self.get_logger().info("Panda robot moved to start position.")
-
         return response
 
     def end_effector_delta_pos_callback(self, request, response):
+        """Move the end effector by a delta position."""
+        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+            self.get_logger().error("Panda Interface node is not active.")
+            return response
+
         pose = self.panda.get_pose()
         pose[0, 3] += request.x
         pose[1, 3] += request.y
@@ -113,7 +181,7 @@ class PandaInterface(Node):
             self.panda.move_to_pose(pose)
         except Exception as e:
             self.get_logger().error(f"Error moving Panda robot: {e}")
-            return
+            return response
 
         self.get_logger().info("Panda robot moved to delta position.")
 
@@ -125,15 +193,20 @@ class PandaInterface(Node):
         return response
 
     def joint_pos_callback(self, request, response):
-        joint_pos = request.pos[0:7] * self.scaling_constant
-        gripper_pos = request.pos[7] * self.scaling_constant
+        """Move the robot to a specific joint position."""
+        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+            self.get_logger().error("Panda Interface node is not active.")
+            return response
+
+        joint_pos = request.pos[0:7] * self.get_parameter("scaling_constant").value
+        gripper_pos = request.pos[7] * self.get_parameter("scaling_constant").value
 
         try:
             self.panda.move_to_joint_position(joint_pos)
             self.gripper.move(gripper_pos, self.get_parameter("gripper_speed").value)
         except Exception as e:
             self.get_logger().error(f"Error moving Panda robot: {e}")
-            return
+            return response
 
         self.get_logger().info("Panda robot moved to position.")
 
@@ -149,7 +222,6 @@ def main(args=None):
     rclpy.init(args=args)
 
     node = PandaInterface()
-
     rclpy.spin(node)
 
     rclpy.shutdown()
