@@ -54,6 +54,8 @@ class PandaInterface(LifecycleNode):
         self.panda = None
         self.gripper = None
 
+        self.status = State.PRIMARY_STATE_UNCONFIGURED
+
         self.get_logger().info("Panda Interface node initialized")
 
     def on_configure(self, state: State) -> TransitionCallbackReturn:
@@ -95,12 +97,15 @@ class PandaInterface(LifecycleNode):
             self.get_logger().error(f"Error initializing Panda robot: {e}")
             return TransitionCallbackReturn.FAILURE
 
+        self.status = State.PRIMARY_STATE_INACTIVE
         self.get_logger().info("Panda Interface node configured.")
         return TransitionCallbackReturn.SUCCESS
 
     def on_activate(self, state: State) -> TransitionCallbackReturn:
         """Activate the node."""
         self.get_logger().info("Activating Panda Interface node...")
+
+        self.status = State.PRIMARY_STATE_ACTIVE
         self.get_logger().info("Panda Interface node activated.")
         return TransitionCallbackReturn.SUCCESS
 
@@ -116,6 +121,7 @@ class PandaInterface(LifecycleNode):
             self.get_logger().error(f"Error stopping Panda robot: {e}")
             return TransitionCallbackReturn.FAILURE
 
+        self.status = State.PRIMARY_STATE_INACTIVE
         self.get_logger().info("Panda Interface node deactivated.")
         return TransitionCallbackReturn.SUCCESS
 
@@ -134,6 +140,7 @@ class PandaInterface(LifecycleNode):
         self.panda = None
         self.gripper = None
 
+        self.status = State.PRIMARY_STATE_UNCONFIGURED
         return TransitionCallbackReturn.SUCCESS
 
     def on_shutdown(self, state: State) -> TransitionCallbackReturn:
@@ -161,11 +168,12 @@ class PandaInterface(LifecycleNode):
             self.panda = None
             self.gripper = None
 
+        self.status = State.PRIMARY_STATE_UNCONFIGURED
         return TransitionCallbackReturn.SUCCESS
 
     def stop_callback(self, request, response):
         """Stop the robot."""
-        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+        if self.status != State.PRIMARY_STATE_ACTIVE:
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
@@ -181,7 +189,7 @@ class PandaInterface(LifecycleNode):
 
     def move_to_start_callback(self, request, response):
         """Move the robot to its start position."""
-        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+        if self.status != State.PRIMARY_STATE_ACTIVE:
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
@@ -196,7 +204,7 @@ class PandaInterface(LifecycleNode):
 
     def end_effector_delta_pos_callback(self, request, response):
         """Move the end effector by a delta position."""
-        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+        if self.status != State.PRIMARY_STATE_ACTIVE:
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
@@ -222,7 +230,7 @@ class PandaInterface(LifecycleNode):
 
     def joint_pos_callback(self, request, response):
         """Move the robot to a specific joint position."""
-        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+        if self.status != State.PRIMARY_STATE_ACTIVE:
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
@@ -249,7 +257,7 @@ class PandaInterface(LifecycleNode):
 
     def joint_pos_delta_callback(self, request, response):
         """Move the robot to a specific joint position delta."""
-        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+        if self.status != State.PRIMARY_STATE_ACTIVE:
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
