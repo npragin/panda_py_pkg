@@ -4,6 +4,7 @@ from sensor_msgs.msg import PointCloud2, PointField
 import sensor_msgs_py.point_cloud2 as pc2
 from std_msgs.msg import Header
 import numpy as np
+from tf2_sensor_msgs import do_transform_cloud
 
 class PointCloudPruner(Node):
     def __init__(self):
@@ -23,8 +24,22 @@ class PointCloudPruner(Node):
     def listener_callback(self, msg):
         self.get_logger().info(f"Received PointCloud2: width={msg.width}, height={msg.height}")
 
+        # Transform point cloud to table frame
+        transform = self.tf_buffer.lookup_transform(
+            "table",
+            msg.header.frame_id,
+            rclpy.time.Time(),
+            timeout=rclpy.duration.Duration(seconds=1.0),
+        )
+
+        if transform is None:
+            self.get_logger().error("Could not transform point cloud to table frame.")
+            return
+
+        pruned = do_transform_cloud(msg, transform)
+
         # Convert incoming PointCloud2 to numpy array
-        raw_points = list(pc2.read_points(msg, skip_nans=True, field_names=("x", "y", "z", "rgb")))
+        raw_points = list(pc2.read_points(pruned, skip_nans=True, field_names=("x", "y", "z", "rgb")))
         if not raw_points:
             self.get_logger().warn("No valid points received.")
             return
