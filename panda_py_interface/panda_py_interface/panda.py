@@ -116,7 +116,7 @@ class PandaInterface(LifecycleNode):
 
         # Stop all motion
         try:
-            self.panda.stop()
+            self.panda.stop_controller()
             self.gripper.stop()
         except Exception as e:
             self.get_logger().error(f"Error stopping Panda robot: {e}")
@@ -151,7 +151,7 @@ class PandaInterface(LifecycleNode):
         if state.id == State.PRIMARY_STATE_ACTIVE:
             # Stop all motion
             try:
-                self.panda.stop()
+                self.panda.stop_controller()
                 self.gripper.stop()
             except Exception as e:
                 self.get_logger().error(f"Error stopping Panda robot: {e}")
@@ -179,7 +179,7 @@ class PandaInterface(LifecycleNode):
             return response
 
         try:
-            self.panda.stop()
+            self.panda.stop_controller()
             self.gripper.stop()
         except Exception as e:
             self.get_logger().error(f"Error stopping Panda robot: {e}")
