@@ -54,6 +54,8 @@ class PandaInterface(LifecycleNode):
         self.panda = None
         self.gripper = None
 
+        self.get_logger().info("Panda Interface node initialized")
+
     def on_configure(self, state: State) -> TransitionCallbackReturn:
         """Configure the node and initialize services."""
         self.get_logger().info("Configuring Panda Interface node...")
