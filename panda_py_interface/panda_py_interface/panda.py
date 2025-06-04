@@ -252,12 +252,6 @@ class PandaInterface(LifecycleNode):
             return response
 
         self.get_logger().info("Panda robot moved to position.")
-
-        new_pose = self.panda.get_pose()
-        response.x = new_pose[0, 3]
-        response.y = new_pose[1, 3]
-        response.z = new_pose[2, 3]
-
         return response
 
     def joint_pos_delta_callback(self, request, response):
