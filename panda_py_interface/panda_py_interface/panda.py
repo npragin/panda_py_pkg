@@ -59,6 +59,9 @@ class PandaInterface(Node):
         self.get_logger().info("Configuring Panda Interface node...")
 
         # Create services
+        self.stop_service = self.create_service(
+            Trigger, "stop", self.stop_callback
+        )
         self.move_to_start_service = self.create_service(
             Trigger, "move_to_start", self.move_to_start_callback
         )
@@ -116,6 +119,7 @@ class PandaInterface(Node):
         self.get_logger().info("Cleaning up Panda Interface node...")
 
         # Destroy services
+        self.destroy_service(self.stop_service)
         self.destroy_service(self.move_to_start_service)
         self.destroy_service(self.end_effector_delta_pos_service)
         self.destroy_service(self.joint_pos_service)
@@ -141,6 +145,7 @@ class PandaInterface(Node):
         
         if state.id != State.PRIMARY_STATE_UNCONFIGURED:
             # Destroy services
+            self.destroy_service(self.stop_service)
             self.destroy_service(self.move_to_start_service)
             self.destroy_service(self.end_effector_delta_pos_service)
             self.destroy_service(self.joint_pos_service)
@@ -150,6 +155,22 @@ class PandaInterface(Node):
             self.gripper = None
 
         return TransitionCallbackReturn.SUCCESS
+    
+    def stop_callback(self, request, response):
+        """Stop the robot."""
+        if self.get_current_state().id != State.PRIMARY_STATE_ACTIVE:
+            self.get_logger().error("Panda Interface node is not active.")
+            return response
+
+        try:
+            self.panda.stop()
+            self.gripper.stop()
+        except Exception as e:
+            self.get_logger().error(f"Error stopping Panda robot: {e}")
+            return response
+        
+        self.get_logger().info("Panda robot stopped.")
+        return response
 
     def move_to_start_callback(self, request, response):
         """Move the robot to its start position."""
