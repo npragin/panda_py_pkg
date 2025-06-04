@@ -38,6 +38,8 @@ class PolicyNode(Node):
         while not self.joint_pos_service.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("Waiting for joint_pos service...")
 
+        self.get_logger().info("Policy node initialized")
+
     def callback(self, msg):
         self.get_logger().info(f"Received a {type(msg)} message. Calling motion service with arbitrary joint position.")
 
