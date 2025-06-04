@@ -14,6 +14,7 @@ from rclpy.lifecycle import TransitionCallbackReturn
 from rcl_interfaces.msg import ParameterDescriptor
 from std_srvs.srv import Trigger
 from rclpy.parameter import ParameterType
+import numpy as np
 
 from panda_py_msgs.srv import EndEffectorDeltaPos
 from panda_py_msgs.srv import JointPos
@@ -191,9 +192,9 @@ class PandaInterface(Node):
             return response
 
         pose = self.panda.get_pose()
-        pose[0, 3] += request.x
-        pose[1, 3] += request.y
-        pose[2, 3] += request.z
+        pose[0, 3] += request.x * self.get_parameter("scaling_constant").value
+        pose[1, 3] += request.y * self.get_parameter("scaling_constant").value
+        pose[2, 3] += request.z * self.get_parameter("scaling_constant").value
 
         try:
             self.panda.move_to_pose(pose)
@@ -216,7 +217,9 @@ class PandaInterface(Node):
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
-        joint_pos = request.pos[0:7] * self.get_parameter("scaling_constant").value
+        requested_joint_pos = np.array(request.pos[0:7])
+
+        joint_pos = requested_joint_pos * self.get_parameter("scaling_constant").value
         gripper_pos = request.pos[7] * self.get_parameter("scaling_constant").value
 
         try:
