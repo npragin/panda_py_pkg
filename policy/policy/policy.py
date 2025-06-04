@@ -18,9 +18,9 @@ class PolicyNode(Node):
     def __init__(self):
         super().__init__("policy")
 
-        self.joint_pos_service = self.create_client(
+        self.joint_pos_delta_service = self.create_client(
             JointPos,
-            "joint_pos",
+            "joint_pos_delta",
         )
         self.image_sub = self.create_subscription(
             Image,
@@ -35,8 +35,8 @@ class PolicyNode(Node):
             10,
         )
 
-        while not self.joint_pos_service.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("Waiting for joint_pos service...")
+        while not self.joint_pos_delta_service.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("Waiting for joint_pos_delta service...")
 
         self.get_logger().info("Policy node initialized")
 
@@ -47,7 +47,7 @@ class PolicyNode(Node):
         joint_pos.pos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         joint_pos.gripper = 0.0
 
-        self.joint_pos_service.call_async(joint_pos)
+        self.joint_pos_delta_service.call_async(joint_pos)
 
 
 def main(args=None):
