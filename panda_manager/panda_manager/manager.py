@@ -14,12 +14,17 @@ from lifecycle_msgs.msg import Transition, State
 from std_srvs.srv import Trigger
 import time
 
+
 class ManagerNode(Node):
     def __init__(self):
         super().__init__("manager")
 
-        self.startup_service = self.create_service(Trigger, "startup_system", self.startup_callback)
-        self.shutdown_service = self.create_service(Trigger, "shutdown_system", self.shutdown_callback)
+        self.startup_service = self.create_service(
+            Trigger, "startup_system", self.startup_callback
+        )
+        self.shutdown_service = self.create_service(
+            Trigger, "shutdown_system", self.shutdown_callback
+        )
 
         # Nodes will be configured, activated, and shut down in the order they are listed here.
         self.managed_nodes = ["panda_interface"]
@@ -29,7 +34,6 @@ class ManagerNode(Node):
             self.create_lifecycle_client(node)
 
         self.get_logger().info("Manager node initialized")
-
 
     def create_lifecycle_client(self, node_name):
         self.lifecycle_change_state_clients[node_name] = self.create_client(
@@ -41,11 +45,15 @@ class ManagerNode(Node):
             f"/{node_name}/get_state",
         )
 
-        while not self.lifecycle_change_state_clients[node_name].wait_for_service(timeout_sec=1.0):
+        while not self.lifecycle_change_state_clients[node_name].wait_for_service(
+            timeout_sec=1.0
+        ):
             self.get_logger().info(f"Waiting for {node_name} to be ready...")
             time.sleep(1.0)
 
-        while not self.lifecycle_get_state_clients[node_name].wait_for_service(timeout_sec=1.0):
+        while not self.lifecycle_get_state_clients[node_name].wait_for_service(
+            timeout_sec=1.0
+        ):
             self.get_logger().info(f"Waiting for {node_name} to be ready...")
             time.sleep(1.0)
 
@@ -64,7 +72,7 @@ class ManagerNode(Node):
                 response.success = False
                 response.message = f"Failed to configure {node_name}"
                 return response
-        
+
         # Wait to activate nodes until calibration is complete
         while not self.is_calibration_complete():
             self.get_logger().info("Waiting for calibration to complete...")
@@ -93,7 +101,9 @@ class ManagerNode(Node):
         for node_name, client in self.lifecycle_change_state_clients.items():
             request = ChangeState.Request()
 
-            curr_state = await self.lifecycle_get_state_clients[node_name].call_async(GetState.Request())
+            curr_state = await self.lifecycle_get_state_clients[node_name].call_async(
+                GetState.Request()
+            )
             if curr_state.current_state.id == State.PRIMARY_STATE_ACTIVE:
                 request.transition.id = Transition.TRANSITION_ACTIVE_SHUTDOWN
             elif curr_state.current_state.id == State.PRIMARY_STATE_INACTIVE:
@@ -101,7 +111,9 @@ class ManagerNode(Node):
             elif curr_state.current_state.id == State.PRIMARY_STATE_UNCONFIGURED:
                 request.transition.id = Transition.TRANSITION_UNCONFIGURED_SHUTDOWN
             else:
-                self.get_logger().error(f"Node {node_name} in unhandled state: {curr_state.current_state.label}, {curr_state.current_state.id}")
+                self.get_logger().error(
+                    f"Node {node_name} in unhandled state: {curr_state.current_state.label}, {curr_state.current_state.id}"
+                )
                 response.success = False
                 response.message = f"Node {node_name} in unhandled state: {curr_state.current_state.label}, {curr_state.current_state.id}"
                 return response
@@ -129,12 +141,13 @@ class ManagerNode(Node):
             if transform is None:
                 self.get_logger().error("No transform found.")
                 return False
-        
+
         except Exception as e:
             self.get_logger().error(f"Error looking up transform: {e}")
             return False
 
         return True
+
 
 def main(args=None):
     rclpy.init(args=args)
