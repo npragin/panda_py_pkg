@@ -34,8 +34,34 @@
   - `joint_pos_delta`: Takes a `JointPos.Request` which contains an eight-element array. The first seven elements are the delta position for the arm joints, and the last element is the delta width for the gripper.
   - `joint_pos`: Takes a `JointPos.Request` which contains an eight-element array. The first seven elements represent the positions of the arm joints, and the last element is the width for the gripper.
 
-### Usage: 
+### Usage: Point Cloud Pruner
 
+- `ros2 run point_cloud_pruner prune_pointcloud`
+
+- The `point_cloud_pruner` node filters and transforms point cloud data:
+  - Subscribes to `/camera/camera/depth/color/points` for input point cloud
+  - Publishes to `/pruned_pointcloud` for filtered output
+  - Transforms point cloud to table frame using TF
+  - Filters points based on maximum depth threshold (1.5 meters)
+
+### Usage: Camera Calibrator
+
+- `ros2 run point_cloud_pruner camera_calibrator`
+
+- The `camera_calibrator` node performs camera calibration using a checkerboard pattern:
+  - Subscribes to `/camera/camera/color/image_raw` for RGB images
+  - Subscribes to `/camera/camera/color/camera_info` for camera intrinsics
+  - Publishes a static transform from `camera_depth_optical_frame` to `table` frame
+  - Uses a 9x8 checkerboard pattern with 5cm square size
+
+  ### Usage: Policy Node
+
+- `ros2 run policy policy`
+
+- The `policy` node handles policy inference and trajectory execution:
+  - Subscribes to both `image` and `point_cloud` topics for input data
+  - Provides a `trajectory` service that executes predefined joint positions
+  - Calls the `joint_pos` service to control the robot, but this can be changed to any service the `panda_py_interface` node provides
 
  ## Requirements
 Humble, libfranka, [panda-py](https://github.com/JeanElsner/panda-py)
