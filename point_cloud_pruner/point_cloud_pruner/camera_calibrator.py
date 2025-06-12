@@ -12,6 +12,8 @@ from cv_bridge import CvBridge
 class CameraCalibrator(Node):
     def __init__(self):
         super().__init__('camera_calibrator')
+
+        self.declare_parameter('continuous_mode', False)
         
         self.tf_static_broadcaster = StaticTransformBroadcaster(self)
         
@@ -76,6 +78,12 @@ class CameraCalibrator(Node):
             t.transform.rotation.w = quat[3]
 
             self.tf_static_broadcaster.sendTransform(t)
+
+            if not self.get_parameter('continuous_mode').value:
+                self.destroy_subscription(self.image_subscription)
+                self.destroy_node()
+        else:
+            self.get_logger().warn("Unable to estimate transformation matrix.")
 
     def estimate_poses(self, color_image):
         """
