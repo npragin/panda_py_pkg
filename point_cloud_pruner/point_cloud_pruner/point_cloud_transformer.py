@@ -55,9 +55,6 @@ class PointCloudTransformer(Node):
             # Transform points
             transformed_points = points.copy()
             transformed_points[:, :3] = (R @ points[:, :3].T).T + t
-
-            # Flip y and z axes
-            transformed_points[:, 1:3] *= -1
             
             # Create PointCloud2 message
             header = Header()

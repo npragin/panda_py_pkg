@@ -142,15 +142,12 @@ class CameraCalibrator(Node):
                 transformation_matrix[:3, :3] = R_board_to_camera
                 transformation_matrix[:3, 3] = tvec.flatten() # t_camera.flatten()
 
-                # Flip axes to match expected coordinate system
-                # flip_matrix = np.array([
-                #     [1, 0, 0, 0],
-                #     [0, 1, 0, 0],
-                #     [0, 0, -1, 0],
-                #     [0, 0, 0, 1]
-                # ])
-                # transformation_matrix = np.linalg.inv(flip_matrix) @ transformation_matrix
-                # transformation_matrix[2, :] = -transformation_matrix[2, :]
+                transformation_matrix = np.linalg.inv(transformation_matrix)    
+                # z axis         
+                transformation_matrix[2, :] = -transformation_matrix[2, :]
+                # y axis
+                transformation_matrix[1, :] = -transformation_matrix[1, :]
+
 
                 return transformation_matrix
             else:
