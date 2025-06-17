@@ -35,7 +35,7 @@ class TransformSaver(Node):
                 rclpy.time.Time())
             
             # Extract points from point cloud
-            points = np.array(list(pc2.read_points(msg, skip_nans=True, field_names=("x", "y", "z", "rgb"))))
+            points = np.array(pc2.read_points_numpy(msg, skip_nans=True, field_names=("x", "y", "z", "rgb")))
             
             # Extract rotation and translation from transform
             q = transform.transform.rotation
