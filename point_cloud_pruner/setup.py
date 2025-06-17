@@ -38,7 +38,7 @@ setup(
             # A node that prunes the point cloud
             'prune_pointcloud = point_cloud_pruner.point_cloud_pruner:main',
             'calibrate_camera = point_cloud_pruner.camera_calibrator:main',
-            'save_transform = point_cloud_pruner.transform_saver:main',
+            'point_cloud_transformer = point_cloud_pruner.point_cloud_transformer:main',
         ],
     },
 )

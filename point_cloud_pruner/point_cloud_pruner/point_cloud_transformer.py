@@ -7,7 +7,7 @@ from panda_py_msgs.msg import TransformMatrix
 
 class PointCloudTransformer(Node):
     def __init__(self):
-        super().__init__('transform_saver')
+        super().__init__('point_cloud_transformer')
 
         self.transform_subscriber = self.create_subscription(
             TransformMatrix,
