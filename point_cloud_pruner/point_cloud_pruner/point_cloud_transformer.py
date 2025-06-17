@@ -1,9 +1,10 @@
 import rclpy
 from rclpy.node import Node
 import numpy as np
-from sensor_msgs.msg import PointCloud2
+from sensor_msgs.msg import PointCloud2, PointField
 import sensor_msgs_py.point_cloud2 as pc2
 from panda_py_msgs.msg import TransformMatrix
+from std_msgs.msg import Header
 
 class PointCloudTransformer(Node):
     def __init__(self):
@@ -58,7 +59,13 @@ class PointCloudTransformer(Node):
             # Flip y and z axes
             transformed_points[:, 1:3] *= -1
             
-            self.publisher.publish(transformed_points)
+            # Create PointCloud2 message
+            header = Header()
+            header.stamp = msg.header.stamp
+            header.frame_id = 'table'
+            cloud_out = pc2.create_cloud(header, msg.fields, transformed_points)
+            
+            self.publisher.publish(cloud_out)
             self.get_logger().info('Successfully published transformed points')
             
         except Exception as ex:
