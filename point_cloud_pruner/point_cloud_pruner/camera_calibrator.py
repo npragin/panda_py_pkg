@@ -7,6 +7,7 @@ import numpy as np
 import cv2
 from scipy.spatial.transform import Rotation as R
 from cv_bridge import CvBridge
+from panda_py_msgs.msg import TransformMatrix
 
 
 class CameraCalibrator(Node):
@@ -31,6 +32,12 @@ class CameraCalibrator(Node):
             10
         )
 
+        self.rotation_publisher = self.create_publisher(
+            TransformMatrix,
+            '/rotation_matrix',
+            10
+        )
+
         self.bridge = CvBridge()
         self.intrinsics = None
         self.distortion_coefficients = None
@@ -51,6 +58,8 @@ class CameraCalibrator(Node):
             return
 
         transformation_matrix = self.estimate_poses(self.bridge.imgmsg_to_cv2(msg, 'bgr8'))
+
+        self.rotation_publisher.publish(transformation_matrix)
 
         if transformation_matrix is not None:
             self.get_logger().info(f"Estimated transformation matrix: {transformation_matrix}")
