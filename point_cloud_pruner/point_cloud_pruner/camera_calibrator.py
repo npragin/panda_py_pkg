@@ -12,6 +12,8 @@ from cv_bridge import CvBridge
 class CameraCalibrator(Node):
     def __init__(self):
         super().__init__('camera_calibrator')
+
+        self.declare_parameter('continuous_mode', False)
         
         self.tf_static_broadcaster = StaticTransformBroadcaster(self)
         
@@ -77,6 +79,12 @@ class CameraCalibrator(Node):
 
             self.tf_static_broadcaster.sendTransform(t)
 
+            if not self.get_parameter('continuous_mode').value:
+                self.destroy_subscription(self.image_subscription)
+                self.destroy_node()
+        else:
+            self.get_logger().warn("Unable to estimate transformation matrix.")
+
     def estimate_poses(self, color_image):
         """
         Estimates poses for the given color image.
@@ -95,24 +103,20 @@ class CameraCalibrator(Node):
         CHECKERBOARD = (9, 8)
         square_size = 0.05
         objp = np.zeros((CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
-        x, y = np.meshgrid(range(CHECKERBOARD[0]), range(CHECKERBOARD[1]))
-        # Stack X and Y coordinates
-        objp[:, :2] = np.stack((x[:, ::-1].flatten(), y.flatten()), axis=1)
-        objp *= square_size
+        objp[:, :2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2) * square_size
 
         print("Estimating poses and creating masked images...")
 
         gray_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
-        ret, corners = cv2.findChessboardCornersSB(
-            gray_image, CHECKERBOARD, flags=cv2.CALIB_CB_EXHAUSTIVE + cv2.CALIB_CB_ACCURACY
+        ret, corners = cv2.findChessboardCorners(
+            gray_image, CHECKERBOARD
         )
 
         if ret:
-            # If we find the checkerboard
-            # Proceed with pose estimation
+            # If we find the checkerboard proceed with pose estimation
+            # NOTE: Fixed code used np.zeros((1,5)) for dist_coeffs instead of actual
             ret, rvec, tvec = cv2.solvePnP(objp, corners, camera_matrix, dist_coeffs)
             if ret:
-                # If we can estimate the pose from the checkerboard
                 R_board_to_camera, _ = cv2.Rodrigues(rvec)
                 R_camera_to_board = R_board_to_camera.T
                 t_camera = -np.matrix(R_camera_to_board) * np.matrix(tvec)
@@ -120,6 +124,9 @@ class CameraCalibrator(Node):
                 transformation_matrix = np.eye(4)
                 transformation_matrix[:3, :3] = R_camera_to_board
                 transformation_matrix[:3, 3] = t_camera.flatten()
+
+                # Flip axes to match expected coordinate system
+                transformation_matrix[:3, :] *= -1
 
                 return transformation_matrix
             else:
