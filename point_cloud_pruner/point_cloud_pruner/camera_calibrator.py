@@ -14,7 +14,7 @@ class CameraCalibrator(Node):
     def __init__(self):
         super().__init__('camera_calibrator')
 
-        self.declare_parameter('continuous_mode', False)
+        self.declare_parameter('continuous_mode', True)
         
         self.tf_static_broadcaster = StaticTransformBroadcaster(self)
         
