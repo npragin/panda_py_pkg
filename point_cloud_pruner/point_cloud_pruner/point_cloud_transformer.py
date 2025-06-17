@@ -48,8 +48,8 @@ class PointCloudTransformer(Node):
             points = np.array(pc2.read_points_numpy(msg, skip_nans=True, field_names=("x", "y", "z", "rgb")))
 
             # Extract rotation and translation from transform
-            R = self.transform.data[:3, :3]
-            t = self.transform.data[:3, 3]
+            R = self.transform[:3, :3]
+            t = self.transform[:3, 3]
 
             # Transform points
             transformed_points = points.copy()
