@@ -126,7 +126,13 @@ class CameraCalibrator(Node):
                 transformation_matrix[:3, 3] = t_camera.flatten()
 
                 # Flip axes to match expected coordinate system
-                transformation_matrix[:3, :] *= -1
+                flip_matrix = np.array([
+                    [-1, 0, 0, 0],
+                    [0, -1, 0, 0],
+                    [0, 0, -1, 0],
+                    [0, 0, 0, 1]
+                ])
+                transformation_matrix = flip_matrix @ transformation_matrix
 
                 return transformation_matrix
             else:
