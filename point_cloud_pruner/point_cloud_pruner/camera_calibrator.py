@@ -64,10 +64,12 @@ class CameraCalibrator(Node):
 
             # Create and publish TransformMatrix message
             transform_msg = TransformMatrix()
+            rows = []
             for i in range(4):
                 row = TransformMatrixRow()
-                row.data = transformation_matrix[i].tolist()
-                transform_msg.rows.append(row)
+                row.data = [float(x) for x in transformation_matrix[i]]
+                rows.append(row)
+            transform_msg.rows = rows
             self.transform_publisher.publish(transform_msg)
 
             # Publish transformation matrix
