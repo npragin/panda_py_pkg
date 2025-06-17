@@ -33,9 +33,10 @@ class PointCloudTransformer(Node):
 
         self.get_logger().info('Point Cloud Transformer Node Initialized')
 
-
     def transform_callback(self, msg: TransformMatrix):
-        self.transform = msg
+        transform_matrix = np.array([row.data for row in msg.rows])
+        self.transform = transform_matrix
+        self.get_logger().info('Received new transform matrix')
         
     def point_cloud_callback(self, msg: PointCloud2):
         if self.transform is None:
