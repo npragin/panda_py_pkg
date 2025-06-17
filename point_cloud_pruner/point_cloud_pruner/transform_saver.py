@@ -7,7 +7,7 @@ from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformException
 from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
-from tf2_sensor_msgs import do_transform_cloud
+from scipy.spatial.transform import Rotation
 
 class TransformSaver(Node):
     def __init__(self):
@@ -34,10 +34,22 @@ class TransformSaver(Node):
                 msg.header.frame_id,
                 rclpy.time.Time())
             
-            transformed_cloud = do_transform_cloud(msg, transform)
-            points = np.array(list(pc2.read_points(transformed_cloud, skip_nans=True, field_names=("x", "y", "z", "rgb"))))
+            # Extract points from point cloud
+            points = np.array(list(pc2.read_points(msg, skip_nans=True, field_names=("x", "y", "z", "rgb"))))
             
-            np.save('transformed_points.npy', points)
+            # Extract rotation and translation from transform
+            q = transform.transform.rotation
+            rotation = Rotation.from_quat([q.x, q.y, q.z, q.w])
+            R = rotation.as_matrix()
+            t = np.array([
+                transform.transform.translation.x,
+                transform.transform.translation.y,
+                transform.transform.translation.z
+            ])
+            transformed_points = points.copy()
+            transformed_points[:, :3] = (R @ points[:, :3].T).T + t
+            
+            np.save('transformed_points.npy', transformed_points)
             self.get_logger().info('Successfully saved transformed points to transformed_points.npy')
             
         except TransformException as ex:
