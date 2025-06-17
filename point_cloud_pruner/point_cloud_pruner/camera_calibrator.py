@@ -118,21 +118,22 @@ class CameraCalibrator(Node):
             ret, rvec, tvec = cv2.solvePnP(objp, corners, camera_matrix, dist_coeffs)
             if ret:
                 R_board_to_camera, _ = cv2.Rodrigues(rvec)
-                R_camera_to_board = R_board_to_camera.T
-                t_camera = -np.matrix(R_camera_to_board) * np.matrix(tvec)
+                # R_camera_to_board = R_board_to_camera.T
+                # t_camera = -np.matrix(R_camera_to_board) * np.matrix(tvec)
 
                 transformation_matrix = np.eye(4)
-                transformation_matrix[:3, :3] = R_camera_to_board
-                transformation_matrix[:3, 3] = t_camera.flatten()
+                transformation_matrix[:3, :3] = R_board_to_camera
+                transformation_matrix[:3, 3] = tvec.flatten() # t_camera.flatten()
 
                 # Flip axes to match expected coordinate system
-                flip_matrix = np.array([
-                    [-1, 0, 0, 0],
-                    [0, -1, 0, 0],
-                    [0, 0, -1, 0],
-                    [0, 0, 0, 1]
-                ])
-                transformation_matrix = flip_matrix @ transformation_matrix
+                # flip_matrix = np.array([
+                #     [1, 0, 0, 0],
+                #     [0, 1, 0, 0],
+                #     [0, 0, -1, 0],
+                #     [0, 0, 0, 1]
+                # ])
+                # transformation_matrix = np.linalg.inv(flip_matrix) @ transformation_matrix
+                # transformation_matrix[2, :] = -transformation_matrix[2, :]
 
                 return transformation_matrix
             else:
