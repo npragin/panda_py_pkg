@@ -32,9 +32,9 @@ class CameraCalibrator(Node):
             10
         )
 
-        self.rotation_publisher = self.create_publisher(
+        self.transform_publisher = self.create_publisher(
             TransformMatrix,
-            '/rotation_matrix',
+            '/transform_matrix',
             10
         )
 
@@ -59,7 +59,7 @@ class CameraCalibrator(Node):
 
         transformation_matrix = self.estimate_poses(self.bridge.imgmsg_to_cv2(msg, 'bgr8'))
 
-        self.rotation_publisher.publish(transformation_matrix)
+        self.transform_publisher.publish(transformation_matrix)
 
         if transformation_matrix is not None:
             self.get_logger().info(f"Estimated transformation matrix: {transformation_matrix}")
