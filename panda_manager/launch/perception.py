@@ -28,10 +28,10 @@ def generate_launch_description():
                 executable="prune_pointcloud",
                 name="pruner",
                 parameters=[{
-                    "min_x": -0.75,
-                    "max_x": 0.55,
+                    "min_x": -0.7,
+                    "max_x": 0.45,
                     "max_y": 0.2,
-                    "min_z": -0.05,
+                    "min_z": -0.15,
                 }],
             ),
         ]
