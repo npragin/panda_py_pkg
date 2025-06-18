@@ -78,10 +78,10 @@ class PandaInterface(LifecycleNode):
             "joint_pos",
             self.joint_pos_callback,
         )
-        self.joint_pos_delta_service = self.create_service(
+        self.joint_delta_pos_service = self.create_service(
             JointPos,
-            "joint_pos_delta",
-            self.joint_pos_delta_callback,
+            "joint_delta_pos",
+            self.joint_delta_pos_callback,
         )
 
         # Initialize robot connection
@@ -135,7 +135,7 @@ class PandaInterface(LifecycleNode):
         self.destroy_service(self.move_to_start_service)
         self.destroy_service(self.end_effector_delta_pos_service)
         self.destroy_service(self.joint_pos_service)
-        self.destroy_service(self.joint_pos_delta_service)
+        self.destroy_service(self.joint_delta_pos_service)
 
         # Cleanup robot connection
         self.panda = None
@@ -163,7 +163,7 @@ class PandaInterface(LifecycleNode):
             self.destroy_service(self.move_to_start_service)
             self.destroy_service(self.end_effector_delta_pos_service)
             self.destroy_service(self.joint_pos_service)
-            self.destroy_service(self.joint_pos_delta_service)
+            self.destroy_service(self.joint_delta_pos_service)
 
             # Cleanup robot connection
             self.panda = None
@@ -254,7 +254,7 @@ class PandaInterface(LifecycleNode):
         self.get_logger().info("Panda robot moved to position.")
         return response
 
-    def joint_pos_delta_callback(self, request, response):
+    def joint_delta_pos_callback(self, request, response):
         """Move the robot to a specific joint position delta."""
         if self.status != State.PRIMARY_STATE_ACTIVE:
             self.get_logger().error("Panda Interface node is not active.")

@@ -31,7 +31,7 @@
   - `stop`: Stops the robot using a `std_srvs/Trigger`
   - `move_to_start`: Moves the robot to its starting position using a `std_srvs/Trigger`
   - `end_effector_delta_pos`: Takes an `EndEffectorDeltaPos.Request` which contains an `x, y, z` which encode the delta end effector position the robot should move to.
-  - `joint_pos_delta`: Takes a `JointPos.Request` which contains an eight-element array. The first seven elements are the delta position for the arm joints, and the last element is the delta width for the gripper.
+  - `joint_delta_pos`: Takes a `JointPos.Request` which contains an eight-element array. The first seven elements are the delta position for the arm joints, and the last element is the delta width for the gripper.
   - `joint_pos`: Takes a `JointPos.Request` which contains an eight-element array. The first seven elements represent the positions of the arm joints, and the last element is the width for the gripper.
 
 ### Usage: Point Cloud Pruner

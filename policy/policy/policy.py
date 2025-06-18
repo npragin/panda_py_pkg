@@ -81,10 +81,10 @@ class PolicyNode(Node):
                 JointPos,
                 "joint_pos",
             )
-        elif action_space == 'joint_pos_delta':
+        elif action_space == 'joint_delta_pos':
             self.action_client = self.create_client(
                 JointPos,
-                "joint_pos_delta",
+                "joint_delta_pos",
             )
         elif action_space == 'end_effector_delta_pos':
             self.action_client = self.create_client(
@@ -103,14 +103,14 @@ class PolicyNode(Node):
             self.get_logger().error("Action client not initialized")
             return
 
-        elif self.get_parameter('action_space').value == 'joint_pos' or self.get_parameter('action_space').value == 'joint_pos_delta':
+        elif self.get_parameter('action_space').value == 'joint_pos' or self.get_parameter('action_space').value == 'joint_delta_pos':
             action = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
             action_request = JointPos.Request()
             action_request.pos = action
 
-            if self.get_parameter('action_space').value == 'joint_pos_delta':
-                action = self.joint_pos_delta_clip_scale(action)
+            if self.get_parameter('action_space').value == 'joint_delta_pos':
+                action = self.joint_delta_pos_clip_scale(action)
 
         elif self.get_parameter('action_space').value == 'end_effector_delta_pos':
             action_request = EndEffectorDeltaPos.Request()
@@ -144,7 +144,7 @@ class PolicyNode(Node):
         response.success = True
         return response
     
-    def joint_pos_delta_clip_scale(self, joint_pos_delta):
+    def joint_delta_pos_clip_scale(self, joint_delta_pos):
         """
         Clips and scales the joint pos delta to match Maniskill3 single action limits
         """
@@ -152,8 +152,8 @@ class PolicyNode(Node):
         low = -0.1
 
         result = []
-        for i in range(len(joint_pos_delta)):
-            clipped_action = max(min(joint_pos_delta[i], high), low)
+        for i in range(len(joint_delta_pos)):
+            clipped_action = max(min(joint_delta_pos[i], high), low)
             scaled_action = 0.5 * (high + low) + 0.5 * (high - low) * clipped_action
             result.append(scaled_action)
 
