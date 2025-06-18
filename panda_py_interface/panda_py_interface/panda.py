@@ -97,7 +97,6 @@ class PandaInterface(LifecycleNode):
             "joint_delta_pos",
             self.joint_delta_pos_callback,
         )
-        self.state_timer = self.create_timer(0.1, self.state_callback)
         self.joint_pos_publisher = self.create_publisher(
             JointPos,
             "panda_state/joint_pos",
@@ -108,6 +107,7 @@ class PandaInterface(LifecycleNode):
             "panda_state/joint_vel",
             1,
         )
+        self.state_timer = self.create_timer(0.1, self.state_callback)
 
         self.status = StateMsg.PRIMARY_STATE_INACTIVE
         self.get_logger().info("Panda Interface node configured.")
