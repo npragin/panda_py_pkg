@@ -224,9 +224,9 @@ class PandaInterface(LifecycleNode):
         """Publish the current state of the robot."""
         state = self.panda.get_state()
 
-        q = state["q"]
+        q = state.q
         gripper_width = self.gripper.readOnce().width
-        dq = state["dq"]
+        dq = state.dq
         # NOTE: libfranka does not provide gripper velocity
         gripper_velocity = 0
 
