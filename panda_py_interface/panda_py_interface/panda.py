@@ -100,12 +100,12 @@ class PandaInterface(LifecycleNode):
         self.state_timer = self.create_timer(0.1, self.state_callback)
         self.joint_pos_publisher = self.create_publisher(
             JointPos,
-            "state/joint_pos",
+            "panda_state/joint_pos",
             1,
         )
         self.joint_vel_publisher = self.create_publisher(
             JointPos,
-            "state/joint_vel",
+            "panda_state/joint_vel",
             1,
         )
 
