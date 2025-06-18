@@ -40,6 +40,15 @@ class PointCloudTransformer(Node):
 
     def transform_callback(self, msg: TransformMatrix):
         transform_matrix = np.array([row.data for row in msg.rows])
+        
+        # Apply additional translations to the transform matrix
+        additional_translation = np.array([
+            self.get_parameter("additional_x_translation").value,
+            self.get_parameter("additional_y_translation").value,
+            self.get_parameter("additional_z_translation").value
+        ])
+        transform_matrix[:3, 3] += additional_translation
+        
         self.transform = transform_matrix
         self.get_logger().info('Received new transform matrix')
         
@@ -55,11 +64,6 @@ class PointCloudTransformer(Node):
             # Extract rotation and translation from transform
             R = self.transform[:3, :3]
             t = self.transform[:3, 3]
-
-            # Add additional translation
-            t += np.array([self.get_parameter("additional_x_translation").value,
-                           self.get_parameter("additional_y_translation").value,
-                           self.get_parameter("additional_z_translation").value])
 
             # Transform points
             transformed_points = points.copy()
