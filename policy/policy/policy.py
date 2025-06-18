@@ -42,6 +42,7 @@ class PolicyNode(Node):
             self.trajectory_callback,
         )
 
+        # TODO: create_action_client() should only be called once after converting to a lifecycle node
         while self.action_client is None or not self.action_client.wait_for_service(timeout_sec=1.0):
             self.create_action_client()
             self.get_logger().info("Waiting for action client...")
@@ -101,18 +102,21 @@ class PolicyNode(Node):
         if self.action_client is None:
             self.get_logger().error("Action client not initialized")
             return
+
         elif self.get_parameter('action_space').value == 'joint_pos' or self.get_parameter('action_space').value == 'joint_pos_delta':
-            joint_pos = JointPos.Request()
-            joint_pos.pos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            action = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-            self.action_client.call_async(joint_pos)
+            action_request = JointPos.Request()
+            action_request.pos = action
+
         elif self.get_parameter('action_space').value == 'end_effector_delta_pos':
-            end_effector_delta_pos = EndEffectorDeltaPos.Request()
-            end_effector_delta_pos.x = 0.0
-            end_effector_delta_pos.y = 0.0
-            end_effector_delta_pos.z = 0.0
+            action_request = EndEffectorDeltaPos.Request()
+            action_request.x = 0.0
+            action_request.y = 0.0
+            action_request.z = 0.0
 
-            self.action_client.call_async(end_effector_delta_pos)
+        self.get_logger().info(f"Calling action service with action {action_request}")
+        self.action_client.call_async(action_request)
 
     def trajectory_callback(self, request, response):
         self.get_logger().info("Received trajectory request")
