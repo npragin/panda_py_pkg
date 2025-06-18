@@ -11,7 +11,7 @@ class PointCloudPruner(Node):
         
         self.subscription = self.create_subscription(
             PointCloud2,
-            '/transformed_pointcloud',
+            '/transformed_points',
             self.listener_callback,
             10)
         self.publisher = self.create_publisher(PointCloud2, '/pruned_pointcloud', 10)
