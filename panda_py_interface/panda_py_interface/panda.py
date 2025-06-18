@@ -225,7 +225,7 @@ class PandaInterface(LifecycleNode):
         state = self.panda.get_state()
 
         q = state.q
-        gripper_width = self.gripper.readOnce().width
+        gripper_width = self.gripper.read_once().width
         dq = state.dq
         # NOTE: libfranka does not provide gripper velocity
         gripper_velocity = 0
