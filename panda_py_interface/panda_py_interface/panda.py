@@ -18,7 +18,8 @@ from rclpy.parameter import ParameterType
 import numpy as np
 
 from panda_py_msgs.srv import EndEffectorDeltaPos
-from panda_py_msgs.srv import JointPos
+from panda_py_msgs.srv import JointPos as JointPosSrv
+from panda_py_msgs.msg import JointPos as JointPosMsg
 import panda_py
 from panda_py import libfranka
 
@@ -88,22 +89,22 @@ class PandaInterface(LifecycleNode):
             self.end_effector_delta_pos_callback,
         )
         self.joint_pos_service = self.create_service(
-            JointPos,
+            JointPosSrv,
             "joint_pos",
             self.joint_pos_callback,
         )
         self.joint_delta_pos_service = self.create_service(
-            JointPos,
+            JointPosSrv,
             "joint_delta_pos",
             self.joint_delta_pos_callback,
         )
         self.joint_pos_publisher = self.create_publisher(
-            JointPos,
+            JointPosMsg,
             "panda_state/joint_pos",
             1,
         )
         self.joint_vel_publisher = self.create_publisher(
-            JointPos,
+            JointPosMsg,
             "panda_state/joint_vel",
             1,
         )
@@ -230,8 +231,8 @@ class PandaInterface(LifecycleNode):
         # NOTE: libfranka does not provide gripper velocity
         gripper_velocity = 0
 
-        self.joint_pos_publisher.publish(JointPos(pos=q + [gripper_width]))
-        self.joint_vel_publisher.publish(JointPos(pos=dq + [gripper_velocity]))
+        self.joint_pos_publisher.publish(JointPosMsg(pos=q + [gripper_width]))
+        self.joint_vel_publisher.publish(JointPosMsg(pos=dq + [gripper_velocity]))
 
     def end_effector_delta_pos_callback(self, request, response):
         """Move the end effector by a delta position."""
