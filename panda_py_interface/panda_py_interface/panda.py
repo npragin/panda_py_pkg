@@ -63,6 +63,20 @@ class PandaInterface(LifecycleNode):
         """Configure the node and initialize services."""
         self.get_logger().info("Configuring Panda Interface node...")
 
+        # Initialize robot connection
+        try:
+            self.panda = panda_py.Panda(self.get_parameter("hostname").value)
+            self.gripper = libfranka.Gripper(self.get_parameter("hostname").value)
+
+            if self.panda is None or self.gripper is None:
+                self.get_logger().error(
+                    "Error initializing Panda robot: Constructors returned None."
+                )
+                return TransitionCallbackReturn.FAILURE
+        except Exception as e:
+            self.get_logger().error(f"Error initializing Panda robot: {e}")
+            return TransitionCallbackReturn.FAILURE
+        
         # Create services
         self.stop_service = self.create_service(Trigger, "stop", self.stop_callback)
         self.move_to_start_service = self.create_service(
@@ -83,20 +97,6 @@ class PandaInterface(LifecycleNode):
             "joint_delta_pos",
             self.joint_delta_pos_callback,
         )
-
-        # Initialize robot connection
-        try:
-            self.panda = panda_py.Panda(self.get_parameter("hostname").value)
-            self.gripper = libfranka.Gripper(self.get_parameter("hostname").value)
-
-            if self.panda is None or self.gripper is None:
-                self.get_logger().error(
-                    "Error initializing Panda robot: Constructors returned None."
-                )
-                return TransitionCallbackReturn.FAILURE
-        except Exception as e:
-            self.get_logger().error(f"Error initializing Panda robot: {e}")
-            return TransitionCallbackReturn.FAILURE
 
         self.status = StateMsg.PRIMARY_STATE_INACTIVE
         self.get_logger().info("Panda Interface node configured.")
