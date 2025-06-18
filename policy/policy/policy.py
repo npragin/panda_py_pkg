@@ -109,6 +109,9 @@ class PolicyNode(Node):
             action_request = JointPos.Request()
             action_request.pos = action
 
+            if self.get_parameter('action_space').value == 'joint_pos_delta':
+                action = self.joint_pos_delta_clip_scale(action)
+
         elif self.get_parameter('action_space').value == 'end_effector_delta_pos':
             action_request = EndEffectorDeltaPos.Request()
             action_request.x = 0.0
@@ -140,6 +143,23 @@ class PolicyNode(Node):
 
         response.success = True
         return response
+    
+    def joint_pos_delta_clip_scale(self, joint_pos_delta):
+        """
+        Clips and scales the joint pos delta to match Maniskill3 single action limits
+        """
+        high = 0.1
+        low = -0.1
+
+        result = []
+        for i in range(len(joint_pos_delta)):
+            clipped_action = max(min(joint_pos_delta[i], high), low)
+            scaled_action = 0.5 * (high + low) + 0.5 * (high - low) * clipped_action
+            result.append(scaled_action)
+
+        return result
+
+
 
 
 def main(args=None):
