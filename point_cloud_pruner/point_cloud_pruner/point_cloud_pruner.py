@@ -3,8 +3,6 @@ from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2, PointField
 import sensor_msgs_py.point_cloud2 as pc2
 from std_msgs.msg import Header
-import numpy as np
-from tf2_sensor_msgs import do_transform_cloud
 
 class PointCloudPruner(Node):
     def __init__(self):
