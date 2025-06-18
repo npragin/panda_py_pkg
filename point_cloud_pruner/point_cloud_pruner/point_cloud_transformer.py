@@ -10,6 +10,10 @@ class PointCloudTransformer(Node):
     def __init__(self):
         super().__init__('point_cloud_transformer')
 
+        self.declare_parameter("additional_x_translation", 0.0)
+        self.declare_parameter("additional_y_translation", 0.0)
+        self.declare_parameter("additional_z_translation", 0.0)
+
         self.transform_subscriber = self.create_subscription(
             TransformMatrix,
             '/transform_matrix',
@@ -51,6 +55,11 @@ class PointCloudTransformer(Node):
             # Extract rotation and translation from transform
             R = self.transform[:3, :3]
             t = self.transform[:3, 3]
+
+            # Add additional translation
+            t += np.array([self.get_parameter("additional_x_translation").value,
+                           self.get_parameter("additional_y_translation").value,
+                           self.get_parameter("additional_z_translation").value])
 
             # Transform points
             transformed_points = points.copy()

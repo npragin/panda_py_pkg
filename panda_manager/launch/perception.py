@@ -18,6 +18,10 @@ def generate_launch_description():
                 package="point_cloud_pruner",
                 executable="point_cloud_transformer",
                 name="point_cloud_transformer",
+                parameters=[{
+                    "additional_x_translation": 0.2,
+                    "additional_y_translation": 0.2,
+                }],
             ),
             Node(
                 package="point_cloud_pruner",
