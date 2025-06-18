@@ -97,6 +97,17 @@ class PandaInterface(LifecycleNode):
             "joint_delta_pos",
             self.joint_delta_pos_callback,
         )
+        self.state_timer = self.create_timer(0.1, self.state_callback)
+        self.joint_pos_publisher = self.create_publisher(
+            JointPos,
+            "state/joint_pos",
+            1,
+        )
+        self.joint_vel_publisher = self.create_publisher(
+            JointPos,
+            "state/joint_vel",
+            1,
+        )
 
         self.status = StateMsg.PRIMARY_STATE_INACTIVE
         self.get_logger().info("Panda Interface node configured.")
@@ -136,6 +147,9 @@ class PandaInterface(LifecycleNode):
         self.destroy_service(self.end_effector_delta_pos_service)
         self.destroy_service(self.joint_pos_service)
         self.destroy_service(self.joint_delta_pos_service)
+        self.destroy_timer(self.state_timer)
+        self.destroy_publisher(self.joint_pos_publisher)
+        self.destroy_publisher(self.joint_vel_publisher)
 
         # Cleanup robot connection
         self.panda = None
@@ -164,6 +178,9 @@ class PandaInterface(LifecycleNode):
             self.destroy_service(self.end_effector_delta_pos_service)
             self.destroy_service(self.joint_pos_service)
             self.destroy_service(self.joint_delta_pos_service)
+            self.destroy_timer(self.state_timer)
+            self.destroy_publisher(self.joint_pos_publisher)
+            self.destroy_publisher(self.joint_vel_publisher)
 
             # Cleanup robot connection
             self.panda = None
@@ -202,6 +219,19 @@ class PandaInterface(LifecycleNode):
 
         self.get_logger().info("Panda robot moved to start position.")
         return response
+    
+    def state_callback(self):
+        """Publish the current state of the robot."""
+        state = self.panda.get_state()
+
+        q = state["q"]
+        gripper_width = self.gripper.readOnce().width
+        dq = state["dq"]
+        # NOTE: libfranka does not provide gripper velocity
+        gripper_velocity = 0
+
+        self.joint_pos_publisher.publish(JointPos(pos=q + [gripper_width]))
+        self.joint_vel_publisher.publish(JointPos(pos=dq + [gripper_velocity]))
 
     def end_effector_delta_pos_callback(self, request, response):
         """Move the end effector by a delta position."""
