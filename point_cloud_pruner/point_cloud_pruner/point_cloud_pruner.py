@@ -34,25 +34,11 @@ class PointCloudPruner(Node):
             self.get_logger().warn("All points pruned — skipping publish.")
             return
         
-        self.get_logger().info(f"Publishing {len(pruned)} pruned points with RGB.")
-
-        # Define PointField structure for xyz + rgb
-        fields = [
-            PointField(name='x', offset=0,  datatype=PointField.FLOAT32, count=1),
-            PointField(name='y', offset=4,  datatype=PointField.FLOAT32, count=1),
-            PointField(name='z', offset=8,  datatype=PointField.FLOAT32, count=1),
-            PointField(name='rgb', offset=12, datatype=PointField.FLOAT32, count=1),
-        ]
-
-        # Create new PointCloud2 message
-        header = Header()
-        header.stamp = msg.header.stamp
-        header.frame_id = msg.header.frame_id
-        cloud_out = pc2.create_cloud(header, fields, pruned)
+        cloud_out = pc2.create_cloud(msg.header, msg.fields, pruned)
 
         # Publish pruned point cloud
         self.publisher.publish(cloud_out)
-        self.get_logger().info("Published pruned RGB point cloud.")
+        self.get_logger().info(f"Published {len(pruned)} pruned points.")
 
 def main(args=None):
     rclpy.init(args=args)
