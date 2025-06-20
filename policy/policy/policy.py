@@ -17,7 +17,7 @@ import pickle
 import numpy as np
 
 from panda_py_msgs.srv import JointPos, EndEffectorDeltaPos
-
+from panda_py_msgs.msg import JointPos as JointPosMsg
 
 class PolicyNode(Node):
     def __init__(self):
@@ -55,7 +55,7 @@ class PolicyNode(Node):
             self.trajectory_callback,
         )
         self.joint_pos_sub = self.create_subscription(
-            JointPos,
+            JointPosMsg,
             "panda_state/joint_pos",
             self.joint_pos_callback,
             10,
