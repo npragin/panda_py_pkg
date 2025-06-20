@@ -292,7 +292,7 @@ class PandaInterface(LifecycleNode):
             return response
 
         current_joint_pos = np.array(self.panda.get_state().q)
-        current_gripper_pos = self.gripper.readOnce().width
+        current_gripper_pos = self.gripper.read_once().width
         requested_joint_pos = np.array(request.pos[0:7])
 
         joint_pos = (
