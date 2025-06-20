@@ -11,6 +11,9 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image, PointCloud2
 from std_srvs.srv import Trigger
+from sensor_msgs_py import point_cloud2
+import zmq
+import pickle
 
 from panda_py_msgs.srv import JointPos, EndEffectorDeltaPos
 
@@ -20,6 +23,15 @@ class PolicyNode(Node):
         super().__init__("policy")
 
         self.declare_parameter('action_space', 'joint_pos')
+        self.declare_parameter('zmq_server_address', 'tcp://flip2.engr.oregonstate.edu:96002')
+        self.declare_parameter('goal_pos', [0.0, 0.0, 0.0])
+
+        # Initialize ZeroMQ context and socket
+        self.zmq_context = zmq.Context()
+        self.zmq_socket = self.zmq_context.socket(zmq.REQ)
+        zmq_server_address = self.get_parameter('zmq_server_address').value
+        self.zmq_socket.connect(zmq_server_address)
+        self.get_logger().info(f"Connected to ZeroMQ server at {zmq_server_address}")
 
         self.action_client = None
         self.create_action_client()
@@ -27,13 +39,13 @@ class PolicyNode(Node):
         self.image_sub = self.create_subscription(
             Image,
             "image",
-            self.callback,
+            self.image_callback,
             10,
         )
         self.point_cloud_sub = self.create_subscription(
             PointCloud2,
             "point_cloud",
-            self.callback,
+            self.point_cloud_callback,
             10,
         )
         self.trajectory_client = self.create_service(
@@ -41,6 +53,14 @@ class PolicyNode(Node):
             "trajectory",
             self.trajectory_callback,
         )
+        self.joint_pos_sub = self.create_subscription(
+            JointPos,
+            "panda_state/joint_pos",
+            self.joint_pos_callback,
+            10,
+        )
+
+        self.joint_pos = None
 
         # TODO: create_action_client() should only be called once after converting to a lifecycle node
         while self.action_client is None or not self.action_client.wait_for_service(timeout_sec=1.0):
@@ -94,17 +114,48 @@ class PolicyNode(Node):
         else:
             self.get_logger().error(f"Invalid action space: {action_space}")
 
-    def callback(self, msg):
+    def joint_pos_callback(self, msg):
+        self.get_logger().info(f"Received joint position: {msg.pos}")
+        self.joint_pos = msg.pos
+
+    def image_callback(self, msg):
+        raise NotImplementedError("Image callback not implemented")
+
+    def point_cloud_callback(self, msg):
         self.get_logger().info(
             f"Received a {type(msg)} message. Calling motion service with arbitrary joint position."
         )
+
+        if self.joint_pos is None:
+            self.get_logger().error("Joint position not received yet")
+            return
+
+        pc = point_cloud2.read_points_numpy(msg, field_names=['x', 'y', 'z', 'rgb'])
+        
+        zmq_data = {
+            'message': pickle.dumps(pc),
+            'goal_pos': self.get_parameter('goal_pos').value,
+            'joint_pos': self.joint_pos
+        }
+
+        try:
+            zmq_message = pickle.dumps(zmq_data)
+            self.zmq_socket.send(zmq_message)
+            self.get_logger().info(f"Sent data to ZeroMQ server")
+            
+            response = self.zmq_socket.recv()
+            response_data = pickle.loads(response)
+            self.get_logger().info(f"Received response from server: {response_data}")
+            
+        except Exception as e:
+            self.get_logger().error(f"Error sending data via ZeroMQ: {e}")
 
         if self.action_client is None:
             self.get_logger().error("Action client not initialized")
             return
 
         elif self.get_parameter('action_space').value == 'joint_pos' or self.get_parameter('action_space').value == 'joint_delta_pos':
-            action = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+            action = list(response_data)
 
             action_request = JointPos.Request()
             action_request.pos = action
