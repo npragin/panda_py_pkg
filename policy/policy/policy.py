@@ -160,9 +160,7 @@ class PolicyNode(Node):
             action = list(response_data)
 
             if self.get_parameter('action_space').value == 'joint_delta_pos':
-                self.get_logger().info(f"Action before clipping and scaling: {action}")
                 action = self.joint_delta_pos_clip_scale(action)
-                self.get_logger().info(f"Action after clipping and scaling: {action}")
 
             action_request = JointPos.Request()
             action_request.pos = action
