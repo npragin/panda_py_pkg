@@ -19,8 +19,8 @@ def generate_launch_description():
                 executable="point_cloud_transformer",
                 name="point_cloud_transformer",
                 parameters=[{
-                    "additional_x_translation": -0.2,
-                    "additional_y_translation": -0.2,
+                    "additional_x_translation": -0.7,
+                    "additional_y_translation": -0.1,
                 }],
             ),
             Node(

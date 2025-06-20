@@ -40,6 +40,14 @@ class PointCloudTransformer(Node):
 
     def transform_callback(self, msg: TransformMatrix):
         transform_matrix = np.array([row.data for row in msg.rows])
+
+        maniskill_transform_matrix = np.array([
+            [0, -1, 0],
+            [1,  0, 0],
+            [0,  0, 1]
+        ])
+
+        transform_matrix[:3, :3] = maniskill_transform_matrix @ transform_matrix[:3, :3]
         
         # Apply additional translations to the transform matrix
         additional_translation = np.array([
