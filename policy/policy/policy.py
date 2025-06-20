@@ -23,7 +23,7 @@ class PolicyNode(Node):
     def __init__(self):
         super().__init__("policy")
 
-        self.declare_parameter('action_space', 'joint_pos')
+        self.declare_parameter('action_space', 'joint_delta_pos')
         self.declare_parameter('zmq_server_address', 'tcp://flip4.engr.oregonstate.edu:96002')
         self.declare_parameter('goal_pos', [0.05, 0.05, 0.15])
 
