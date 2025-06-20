@@ -25,13 +25,13 @@ class PointCloudTransformer(Node):
             PointCloud2,
             '/camera/camera/depth/color/points',
             self.point_cloud_callback,
-            10
+            1
         )
 
         self.publisher = self.create_publisher(
             PointCloud2,
             '/transformed_points',
-            10
+            1
         )
 
         self.transform = None

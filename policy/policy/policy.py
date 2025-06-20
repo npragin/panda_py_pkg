@@ -47,7 +47,7 @@ class PolicyNode(Node):
             PointCloud2,
             "pruned_pointcloud",
             self.point_cloud_callback,
-            10,
+            1,  
         )
         self.trajectory_client = self.create_service(
             Trigger,

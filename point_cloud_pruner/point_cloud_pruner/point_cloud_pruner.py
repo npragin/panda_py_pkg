@@ -19,8 +19,8 @@ class PointCloudPruner(Node):
             PointCloud2,
             '/transformed_points',
             self.listener_callback,
-            10)
-        self.publisher = self.create_publisher(PointCloud2, '/pruned_pointcloud', 10)
+            1)
+        self.publisher = self.create_publisher(PointCloud2, '/pruned_pointcloud', 1)
 
         self.get_logger().info('PointCloud Pruner Initialized')
 
