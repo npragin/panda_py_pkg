@@ -27,7 +27,7 @@ def generate_launch_description():
                     "min_x": -0.85,
                     "min_y": -0.4,
                     "max_y": 0.4,
-                    "min_z": -0.15,
+                    "min_z": -0.01,
                 }],
             ),
         ]
