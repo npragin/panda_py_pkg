@@ -163,7 +163,7 @@ class PandaInterface(LifecycleNode):
         """Shutdown the node."""
         self.get_logger().info("Shutting down Panda Interface node...")
 
-        if state.id == State.PRIMARY_STATE_ACTIVE:
+        if state.id == StateMsg.PRIMARY_STATE_ACTIVE:
             # Stop all motion
             try:
                 self.panda.stop_controller()
@@ -172,7 +172,7 @@ class PandaInterface(LifecycleNode):
                 self.get_logger().error(f"Error stopping Panda robot: {e}")
                 return TransitionCallbackReturn.FAILURE
 
-        if state.id != State.PRIMARY_STATE_UNCONFIGURED:
+        if state.id != StateMsg.PRIMARY_STATE_UNCONFIGURED:
             # Destroy services
             self.destroy_service(self.stop_service)
             self.destroy_service(self.move_to_start_service)
@@ -287,7 +287,7 @@ class PandaInterface(LifecycleNode):
 
     def joint_delta_pos_callback(self, request, response):
         """Move the robot to a specific joint position delta."""
-        if self.status != State.PRIMARY_STATE_ACTIVE:
+        if self.status != StateMsg.PRIMARY_STATE_ACTIVE:
             self.get_logger().error("Panda Interface node is not active.")
             return response
 
