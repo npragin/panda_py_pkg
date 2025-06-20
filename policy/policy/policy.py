@@ -14,6 +14,7 @@ from std_srvs.srv import Trigger
 from sensor_msgs_py import point_cloud2
 import zmq
 import pickle
+import numpy as np
 
 from panda_py_msgs.srv import JointPos, EndEffectorDeltaPos
 
@@ -149,6 +150,9 @@ class PolicyNode(Node):
             
         except Exception as e:
             self.get_logger().error(f"Error sending data via ZeroMQ: {e}")
+
+        self.get_logger().info(f"Absolute joint angles after executing this action: {np.array(self.joint_pos) + np.array(response_data)}")
+        input("Press Enter to execute action...")
 
         if self.action_client is None:
             self.get_logger().error("Action client not initialized")
