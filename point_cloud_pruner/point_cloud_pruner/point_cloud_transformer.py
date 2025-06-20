@@ -40,14 +40,6 @@ class PointCloudTransformer(Node):
 
     def transform_callback(self, msg: TransformMatrix):
         transform_matrix = np.array([row.data for row in msg.rows])
-
-        maniskill_transform_matrix = np.array([
-            [0, -1, 0],
-            [1,  0, 0],
-            [0,  0, 1]
-        ])
-
-        transform_matrix[:3, :3] = maniskill_transform_matrix @ transform_matrix[:3, :3]
         
         # Apply additional translations to the transform matrix
         additional_translation = np.array([
@@ -69,6 +61,12 @@ class PointCloudTransformer(Node):
             # Extract points from point cloud
             points = np.array(pc2.read_points_numpy(msg, skip_nans=True, field_names=("x", "y", "z", "rgb")))
 
+            maniskill_transform_matrix = np.array([
+                [0, -1, 0],
+                [1,  0, 0],
+                [0,  0, 1]
+            ])
+
             # Extract rotation and translation from transform
             R = self.transform[:3, :3]
             t = self.transform[:3, 3]
@@ -76,6 +74,7 @@ class PointCloudTransformer(Node):
             # Transform points
             transformed_points = points.copy()
             transformed_points[:, :3] = (R @ points[:, :3].T).T + t
+            transformed_points[:, :3] = (maniskill_transform_matrix @ transformed_points[:, :3].T).T
             
             # Create PointCloud2 message
             header = Header()
