@@ -75,6 +75,7 @@ class PointCloudTransformer(Node):
             transformed_points = points.copy()
             transformed_points[:, :3] = (R @ points[:, :3].T).T + t
             transformed_points[:, :3] = (maniskill_transform_matrix @ transformed_points[:, :3].T).T
+            transformed_points[:, :3] += np.array([-0.5, 0.1, 0])
             
             # Create PointCloud2 message
             header = Header()
