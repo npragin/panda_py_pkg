@@ -151,8 +151,6 @@ class PolicyNode(Node):
         except Exception as e:
             self.get_logger().error(f"Error sending data via ZeroMQ: {e}")
 
-        self.get_logger().info(f"Absolute joint angles after executing this action: {np.array(self.joint_pos) + np.array(response_data)}")
-        input("Press Enter to execute action...")
 
         if self.action_client is None:
             self.get_logger().error("Action client not initialized")
@@ -161,11 +159,15 @@ class PolicyNode(Node):
         elif self.get_parameter('action_space').value == 'joint_pos' or self.get_parameter('action_space').value == 'joint_delta_pos':
             action = list(response_data)
 
+            if self.get_parameter('action_space').value == 'joint_delta_pos':
+                action = self.joint_delta_pos_clip_scale(action)
+
             action_request = JointPos.Request()
             action_request.pos = action
 
-            if self.get_parameter('action_space').value == 'joint_delta_pos':
-                action = self.joint_delta_pos_clip_scale(action)
+            self.get_logger().info(f"Action after clipping and scaling: {action}")
+            self.get_logger().info(f"Absolute joint angles after executing this action: {np.array(self.joint_pos) + np.array(action)}")
+            input("Press Enter to execute action...")
 
         elif self.get_parameter('action_space').value == 'end_effector_delta_pos':
             action_request = EndEffectorDeltaPos.Request()
