@@ -44,7 +44,7 @@ class PolicyNode(Node):
         )
         self.point_cloud_sub = self.create_subscription(
             PointCloud2,
-            "point_cloud",
+            "pruned_pointcloud",
             self.point_cloud_callback,
             10,
         )
