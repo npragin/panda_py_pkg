@@ -160,12 +160,13 @@ class PolicyNode(Node):
             action = list(response_data)
 
             if self.get_parameter('action_space').value == 'joint_delta_pos':
+                self.get_logger().info(f"Action before clipping and scaling: {action}")
                 action = self.joint_delta_pos_clip_scale(action)
+                self.get_logger().info(f"Action after clipping and scaling: {action}")
 
             action_request = JointPos.Request()
             action_request.pos = action
 
-            self.get_logger().info(f"Action after clipping and scaling: {action}")
             self.get_logger().info(f"Absolute joint angles after executing this action: {np.array(self.joint_pos) + np.array(action)}")
             input("Press Enter to execute action...")
 
@@ -204,13 +205,14 @@ class PolicyNode(Node):
     def joint_delta_pos_clip_scale(self, joint_delta_pos):
         """
         Clips and scales the joint pos delta to match Maniskill3 single action limits
+        Assumes input actions are in normalized range [-1, 1] and scales to [-0.1, 0.1]
         """
         high = 0.1
         low = -0.1
 
         result = []
         for i in range(len(joint_delta_pos)):
-            clipped_action = max(min(joint_delta_pos[i], high), low)
+            clipped_action = max(min(joint_delta_pos[i], 1.0), -1.0)
             scaled_action = 0.5 * (high + low) + 0.5 * (high - low) * clipped_action
             result.append(scaled_action)
 
