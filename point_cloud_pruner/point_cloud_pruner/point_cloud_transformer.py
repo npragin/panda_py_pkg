@@ -61,27 +61,29 @@ class PointCloudTransformer(Node):
             # Extract points from point cloud
             points = np.array(pc2.read_points_numpy(msg, skip_nans=True, field_names=("x", "y", "z", "rgb")))
 
-            # maniskill_transform_matrix = np.array([
-            #     [0, -1, 0],
-            #     [1,  0, 0],
-            #     [0,  0, 1]
-            # ])
-
             # Extract rotation and translation from transform
             R = self.transform[:3, :3]
             t = self.transform[:3, 3]
 
             # Transform points
-            transformed_points = points.copy()
-            transformed_points[:, :3] = (R @ points[:, :3].T).T + t
-            # transformed_points[:, :3] = (maniskill_transform_matrix @ transformed_points[:, :3].T).T
-            # transformed_points[:, :3] += np.array([-0.5, 0.1, 0])
+            camera_transformed_points = points.copy()
+            camera_transformed_points[:, :3] = (R @ points[:, :3].T).T + t
+
+            # Apply additional transformations to align with maniskill coordinate system
+            maniskill_transform_matrix = np.array([
+                [0, -1, 0],
+                [1,  0, 0],
+                [0,  0, 1]
+            ])
+            maniskill_transformed_points = camera_transformed_points.copy()
+            maniskill_transformed_points[:, :3] = (maniskill_transform_matrix @ camera_transformed_points[:, :3].T).T
+            maniskill_transformed_points[:, :3] += np.array([-0.4, -0.3, 0])
             
             # Create PointCloud2 message
             header = Header()
             header.stamp = msg.header.stamp
             header.frame_id = 'table'
-            cloud_out = pc2.create_cloud(header, msg.fields, transformed_points)
+            cloud_out = pc2.create_cloud(header, msg.fields, maniskill_transformed_points)
             
             self.publisher.publish(cloud_out)
             self.get_logger().info('Successfully published transformed points')
